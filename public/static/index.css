@@ -1,0 +1,191 @@
+/* 宽度 */
+.w-100{
+	width: 100%;
+}
+.w-20{
+	width: 20%;
+}
+.w-25{
+	width: 25%;
+}
+.w-45{
+	width: 45%;
+}
+.w-50{
+	width: 50%;
+}
+
+/* 边距 */
+.mt-10{
+	margin-top: 10px;
+}
+.mt-15{
+	margin-top: 15px;
+}
+.mb-15{
+	margin-bottom: 15px;
+}
+.ml-10{
+	margin-left: 10px;
+}
+.mb-10{
+	margin-bottom: 10px;
+}
+.mb-15{
+	margin-bottom: 15px;
+}
+.ml-15{
+	margin-left: 15px;
+}
+.mr-15{
+	margin-right: 15px;
+}
+.ml-auto{
+	margin-left: auto !important;
+}
+
+.p{
+	padding: 10px;
+}
+.pb-60{
+	padding-bottom: 60px;
+}
+
+/* 字体大小 */
+.font-size{
+	font-size: 14px;
+}
+.font-size-1{
+	font-size: 16px;
+}
+.font-size-2{
+	font-size: 18px;
+}
+.font-size-3{
+	font-size: 20px;
+}
+.font-size-4{
+	font-size: 22px;
+}
+.font-size-5{
+	font-size: 24px;
+}
+.font-size-6{
+	font-size: 26px;
+}
+
+/* 文字 */
+.text-center{
+	text-align: center;
+}
+.text-left{
+	text-align: left;
+}
+.text-right{
+	text-align: right;
+}
+
+/* flex */
+.d-flex{
+	display: flex;
+}
+.flex-row{
+	flex-direction:row
+}
+.flex-column{
+	flex-direction:column;
+}
+.flex-item-grow{
+	flex-grow: 1
+}
+.item-m-center{
+	align-items:center
+}
+.item-m-end{
+	align-items: flex-end;
+}
+
+.flex-wrap-wrap{
+	flex-wrap: wrap;
+}
+
+.ju-con-start{
+	justify-content:flex-start
+}
+.ju-con-end{
+	justify-content:flex-end
+}
+.ju-con-center{
+	justify-content:center
+}
+.ju-con-between{
+	justify-content:space-between
+}
+.ju-con-around{
+	justify-content:space-around
+}
+
+/* 背景色 */
+.bg-white{
+	background-color: #fff;
+}
+.bg-red{
+	background-color: #ee0a24;
+}
+.bg-3dd{
+	background-color: #3dd4cf;
+}
+.bg-fa{
+	background-color: #fafafa;
+}
+
+/* 边框线 */
+.border-b{
+	border-bottom: 1px solid #ccc;
+}
+
+/* 字体颜色 */
+.color-white{
+	color: #fff;
+}
+.color-red{
+	color: red;
+}
+
+.color-ccc{
+	color: #ccc;
+}
+
+.color-3dd{
+	color: #3dd4cf;
+}
+
+/* 其他 */
+.dispay-b{
+	display: block;
+}
+.card{
+	padding: 10px;
+	border-radius: 10px;
+	background-color: #fff;
+}
+	
+.cutBack, .plus{
+	width: 20px;
+	height: 20px;
+	text-align: center;
+	line-height: 15px;
+	border-radius: 50%;
+	border: 1px solid #ccc;
+	font-size: 30px;
+	color: #ccc;
+}
+.plus{
+	font-size: 21px;
+	background: #f3c363;
+	color: #000;
+	border-color: #f3c363;
+}
+.quantity{
+	margin: 0 5px;
+}
