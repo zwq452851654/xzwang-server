@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 
 
 var app = express();
-var port = normalizePort(process.env.PORT || 8000);
+var port = normalizePort(process.env.PORT || 9000);
 app.set('port', port);
 var server = http.createServer(app);
 server.listen(port, ()=> {
@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));//解析post请求数据
 
 // 接口对应文件
 var indexRouter = require('./routes/index');
-var userApi = require('./routes/user');
+var news = require('./routes/news');
 
 
 
@@ -54,7 +54,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', indexRouter);
-app.use('/api/user', userApi);
+app.use('/api/news', news);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
