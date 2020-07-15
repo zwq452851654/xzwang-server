@@ -12,11 +12,15 @@ const nodeSchedule = require("node-schedule");
 const charset = require("superagent-charset");
 charset(superagent);
 
-var { bodyDealWith } = require('../common');
+var { bodyDealWith, batchDealWith } = require('../common');
 
 
 router.get('/news', (req, res, next) => {
-	// var params = url.parse(req.url, true).query;
+	let field = ['*title', 'hotValue', 'rank', '*link'];
+	let name = [];
+	field.forEach( item =>{
+		name.push(item.indexOf('*') ? item : item.slice(1))
+	})
 	res.send('hello')
 });
 
@@ -41,7 +45,7 @@ function getHotSearchList() {
           hotList.push({
             rank: index,
             link,
-            titlt: text,
+            title: text,
             hotValue
           });
         }
@@ -52,81 +56,72 @@ function getHotSearchList() {
 }
 
 
-// 将格式化好的json数据写入json文件
-const writeJson = (content, file)=>{
-	
+function updateHandle(table_name, hotList){
+	let field = ['*title', '*hotValue', 'rank', '*link'];
+	batchDealWith(field, hotList, function(data){
+		if(data.code){
+			let sql = `DELETE FROM ${table_name}`;
+			db.query(sql, "", function(result,fields){
+				if(result.code == 1){
+					sql = `INSERT INTO ${table_name}(${data.name}) values ?`
+					db.query(sql, [data.data], function(result,fields){
+						result.data = [];
+					});
+				}
+			});
+		}else{
+			
+		}
+	})
 }
 
 
+
+/* 百度热榜 */
+// http://top.baidu.com/?fr=mhd_card
+function get_baidu_hot_List() {
+	const bdHeatUrl = "http://top.baidu.com/buzz?b=1&fr=topindex";
+  return new Promise((resolve, reject) => {
+    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
+    	if (err) reject("request error");
+    	const $ = cheerio.load(res.text);
+    	let hotList = []
+    	$('.list-table tbody tr').each( function(index){
+    		if(index !== 0){
+					if(!$(this).hasClass('item-tr')){
+						const rank = $(this).children().eq(0).find('span').text();
+						const title = $(this).children().eq(1).find('a').text();
+						const link = $(this).children().eq(2).find('a').attr('href');
+						const hotValue = $(this).children().eq(3).find('span').text();
+						hotList.push({
+							rank,
+							title,
+							link,
+							hotValue
+						});
+					}
+    		}
+    	});
+			hotList.length ? resolve(hotList) : reject("errer");
+    })
+  });
+}
+
+
+// 定时触发
 nodeSchedule.scheduleJob("10 * * * * *", async function () {
   try {
+		// 微博
     const hotList = await getHotSearchList();
-		let field = ['title', 'hotValue', 'rank', 'link'];
-		let params = {
-			title: '我是最热的新闻',
-			hotValue: 999,
-			rank: 1,
-			link: 'www.baidu.com'
-		}
-		bodyDealWith(field, params, function(data){
-			console.log('====')
-			
-			if(data.code){
-				console.log(data)
-				// sql = `INSERT INTO weibo-hot(${data.name}) VALUES(${data.questionMark})`;
-				// db.query(sql, data.data, function(result,fields){
-				// 	result.data = [];
-				// 	res.json(result);
-				// });
-			}else{
-				res.json({
-					code: data.code,
-					msg: data.msg
-				});
-			}
-		});
-    // await fs.writeFileSync(
-    //   `${__dirname}/weiboHeat.json`,
-    //   JSON.stringify(hotList),
-    //   "utf-8"
-    // );
+		updateHandle('weibo_hot', hotList);
+		
+		// 百度
+		const baidu = await get_baidu_hot_List();
+		updateHandle('baidu_hot', baidu);
+		
   } catch (error) {
     console.error(error);
   }
 });
-
-/* 百度热榜 */
-// http://top.baidu.com/?fr=mhd_card
-// const bdHeatUrl = "http://top.baidu.com/?fr=mhd_card";
-//  superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
-// 	 	if (err) reject("request error");
-	 	
-// 	 	const $ = cheerio.load(res.text);
-// 	 	let hotList = []
-// 	 	$('#hot-list li').each( function(index){
-	 		
-// 	 		if(index !== 0){
-// 	 			const $a = $(this).children().eq(1);
-// 	 			const text = $a.text();
-// 				const link = $a.attr("href");
-// 				const hotValue = $(this).$('.icon-rise').text()
-// 	 			hotList.push({
-// 	 			  index,
-// 	 			  text,
-// 					link,
-// 					hotValue
-// 	 			});
-// 	 		}
-// 	 	})
-// 	 	fs.writeFileSync(
-// 	 	  `${__dirname}/baiduHeat.json`,
-// 	 	  JSON.stringify(hotList),
-// 	 	  "utf-8"
-// 	 	);
-//  })
-
-
-
-
 
 module.exports = router;
