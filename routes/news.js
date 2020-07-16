@@ -16,12 +16,15 @@ var { bodyDealWith, batchDealWith } = require('../common');
 
 
 router.get('/news', (req, res, next) => {
-	let field = ['*title', 'hotValue', 'rank', '*link'];
-	let name = [];
-	field.forEach( item =>{
-		name.push(item.indexOf('*') ? item : item.slice(1))
+	let table_name = req.query.q;
+	let sql = `SELECT * FROM ${table_name}`;
+	db.query(sql, [], function(result,fields){
+		if(result.code){
+			res.json(result);
+		}else{
+			res.json(result);
+		}
 	})
-	res.send('hello')
 });
 
 
@@ -51,30 +54,60 @@ function getHotSearchList() {
         }
       });
       hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('weibo_hot', hotList);
     });
   });
 }
 
+// 执行插入函数
+function insertData(table_name, name, data){
+	sql = `INSERT INTO ${table_name}(${name}) VALUES ? `
+	db.query(sql, [data], function(result,fields){
+		result.data = [];
+	});
+}
 
+
+let repeatNum = {
+	'weibo_hot': 0,
+	'baidu_hot': 0
+};
+// 如果删除表数据失败后执行
+function queryData(table_name, data){
+	let sql = `SELECT * FROM ${table_name}`;
+	db.query(sql, [], function(result,fields){
+		// 如果length大于0  说明数据并未全部被删除，重新执行下删除操作
+		if(result.code && result.data.length == 0){
+			insertData(table_name, data.name, data.data);
+		}else{
+			if(repeatNum[table_name] >= 3){
+				console.log('停止查询...')
+			}else{
+				repeatNum[table_name]++;
+				queryData(table_name);
+			}
+		}
+	});
+}
+
+// 更新表数据
 function updateHandle(table_name, hotList){
 	let field = ['*title', '*hotValue', 'rank', '*link'];
 	batchDealWith(field, hotList, function(data){
 		if(data.code){
 			let sql = `DELETE FROM ${table_name}`;
-			db.query(sql, "", function(result,fields){
-				if(result.code == 1){
-					sql = `INSERT INTO ${table_name}(${data.name}) values ?`
-					db.query(sql, [data.data], function(result,fields){
-						result.data = [];
-					});
+			db.query(sql, [], function(result,fields){
+				if(result.code){
+					insertData(table_name, data.name, data.data);
+				}else{
+					queryData(table_name, data);
 				}
 			});
 		}else{
-			
+			console.log('数据处理失败...')
 		}
 	})
 }
-
 
 
 /* 百度热榜 */
@@ -103,21 +136,22 @@ function get_baidu_hot_List() {
     		}
     	});
 			hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('baidu_hot', hotList);
     })
   });
 }
 
 
 // 定时触发
-nodeSchedule.scheduleJob("10 * * * * *", async function () {
+const rule = new nodeSchedule.RecurrenceRule();  
+rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
+nodeSchedule.scheduleJob(rule, function () {
   try {
 		// 微博
-    const hotList = await getHotSearchList();
-		updateHandle('weibo_hot', hotList);
+    // getHotSearchList();
 		
 		// 百度
-		const baidu = await get_baidu_hot_List();
-		updateHandle('baidu_hot', baidu);
+		// get_baidu_hot_List();
 		
   } catch (error) {
     console.error(error);
