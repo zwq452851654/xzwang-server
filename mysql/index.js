@@ -37,10 +37,16 @@ module.exports = {
 			connection.query(sql, params, function(err, results, fields) {
 				if (err) {
 					console.log('数据操作失败');
-					throw err;
+					callback && callback(jsonC(0, '数据操作失败', results), fields);
+					// throw err;
 				}
+				
+				//在查询回来的数据前面都会有RowDataPacket一个字样，再这里统一处理掉
+				let dataString = JSON.stringify(results); 
+				let data = JSON.parse(dataString);
+				
 				//将查询出来的数据返回给回调函数
-				callback && callback(jsonC(1, '', results), fields);
+				callback && callback(jsonC(1, '', data), fields);
 				connection.end(function(err) {
 					if (err) {
 						console.log('关闭数据库连接失败！');
