@@ -142,9 +142,72 @@ function get_baidu_hot_List() {
 }
 
 
+/* 腾讯新闻 */
+function get_zhengquan_hot_List() {
+	const bdHeatUrl = "https://new.qq.com/ch/finance_stock/";
+  return new Promise((resolve, reject) => {
+    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
+    	if (err) reject("request error");
+    	const $ = cheerio.load(res.text);
+    	let hotList = []
+			
+    	$('.list .item .detail').each( function(index){
+    		if(index !== 0){
+					const rank = 100;
+					const title = $(this).children().eq(0).children().text();
+					const link = $(this).children().eq(0).children().attr('href');
+					const hotValue = "100";
+					hotList.push({
+						rank,
+						title,
+						link,
+						hotValue
+					});
+    		}
+    	});
+			hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('zhengquan_hot', hotList);
+    })
+  });
+}
+
+
+/* 51cto 技术资讯 */
+function get_jishu_hot_List() {
+	const bdHeatUrl = "https://news.51cto.com/";
+  return new Promise((resolve, reject) => {
+    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
+    	if (err) reject("request error");
+    	const $ = cheerio.load(res.text);
+    	let hotList = []
+			
+    	$('.home-left-list ul li .rinfo').each( function(index){
+    		if(index !== 0){
+					const rank = 100;
+					const title = $(this).children().eq(0).text();
+					const link = $(this).children().eq(0).attr('href');
+					const hotValue = "100";
+					hotList.push({
+						rank,
+						title,
+						link,
+						hotValue
+					});
+    		}
+    	});
+			hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('jishu_hot', hotList);
+    })
+  });
+}
+
+
+
+
 // 定时触发
 const rule = new nodeSchedule.RecurrenceRule();  
 rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
+// rule = "30 * * * * *"
 nodeSchedule.scheduleJob(rule, function () {
   try {
 		// 微博
@@ -152,6 +215,12 @@ nodeSchedule.scheduleJob(rule, function () {
 		
 		// 百度
 		// get_baidu_hot_List();
+		
+		// 腾讯
+		// get_zhengquan_hot_List();
+		
+		// 技术资讯
+		get_jishu_hot_List();
 		
   } catch (error) {
     console.error(error);
