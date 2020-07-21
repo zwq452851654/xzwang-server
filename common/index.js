@@ -1,7 +1,19 @@
 var uuid = require('node-uuid');
 
 module.exports = {
-	// 单条数据的处理方法
+	/**
+	 * 单条数据的处理方法
+	 * 调用: bodyDealWith(field, params, callback)
+	 * field: 存储的表地段名称
+	 * params: json对象
+	 * callback: 在执行后返回 {
+				code: 1,
+				msg: '操作成功',
+				name: 'name,url,parentName,parentValue,childName,childvalue',
+				data: [ '小众网', '39.107.227.98:8088', '技术栏', '001', '前端', '001001' ],
+				questionMark: '?,?,?,?,?,?'
+			}
+	 * */ 
 	bodyDealWith: function(field, params, callback){
 		let name = [];
 		let data = [];
@@ -39,7 +51,18 @@ module.exports = {
 	createUUID: ()=>{
 		return uuid.v4().replace(/-/g, '')
 	},
-	// 批量数据处理方法
+	/**
+	 * 批量数据处理方法
+	 * 调用: batchDealWith(field, list, callback)
+	 * field: 字段名称，
+	 * list: 数组  [{}, {}, {},  ...]
+	 * callback: 在执行后返回 {
+				code: 1,
+				msg: '操作成功',
+				name: 'name,url,parentName,parentValue,childName,childvalue',
+				data: [[], [], [], ... ]
+			}
+	 * */ 
 	batchDealWith: function(field, list, callback){
 		let values = [];
 		let row = [];

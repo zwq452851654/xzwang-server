@@ -27,6 +27,7 @@ app.use(bodyParser.urlencoded({ extended: false }));//解析post请求数据
 // 接口对应文件
 var indexRouter = require('./routes/index');
 var news = require('./routes/home/news');
+var nav = require('./routes/home/nav');
 
 
 
@@ -55,6 +56,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', indexRouter);
 app.use('/api/news', news);
+app.use('/api/nav', nav);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
