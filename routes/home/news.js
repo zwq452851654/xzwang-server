@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const url = require("url");
-var db = require('../mysql');
+var db = require('../../mysql');
 var jwt = require('jsonwebtoken');
 
 const cheerio = require("cheerio");
@@ -12,22 +12,7 @@ const nodeSchedule = require("node-schedule");
 const charset = require("superagent-charset");
 charset(superagent);
 
-var { bodyDealWith, batchDealWith } = require('../common');
-
-
-router.get('/news', (req, res, next) => {
-	let table_name = req.query.q;
-	let sql = `SELECT * FROM ${table_name}`;
-	db.query(sql, [], function(result,fields){
-		if(result.code){
-			res.json(result);
-		}else{
-			res.json(result);
-		}
-	})
-});
-
-
+var { bodyDealWith, batchDealWith } = require('../../common');
 
 
 /* 微博热搜 */
@@ -59,6 +44,7 @@ function getHotSearchList() {
   });
 }
 
+
 // 执行插入函数
 function insertData(table_name, name, data){
 	sql = `INSERT INTO ${table_name}(${name}) VALUES ? `
@@ -70,7 +56,9 @@ function insertData(table_name, name, data){
 
 let repeatNum = {
 	'weibo_hot': 0,
-	'baidu_hot': 0
+	'baidu_hot': 0,
+	'zhengquan_hot': 0,
+	'jishu_hot': 0
 };
 // 如果删除表数据失败后执行
 function queryData(table_name, data){
@@ -89,6 +77,7 @@ function queryData(table_name, data){
 		}
 	});
 }
+
 
 // 更新表数据
 function updateHandle(table_name, hotList){
@@ -111,7 +100,6 @@ function updateHandle(table_name, hotList){
 
 
 /* 百度热榜 */
-// http://top.baidu.com/?fr=mhd_card
 function get_baidu_hot_List() {
 	const bdHeatUrl = "http://top.baidu.com/buzz?b=1&fr=topindex";
   return new Promise((resolve, reject) => {
@@ -142,9 +130,70 @@ function get_baidu_hot_List() {
 }
 
 
+/* 腾讯新闻 */
+function get_zhengquan_hot_List() {
+	const bdHeatUrl = "https://new.qq.com/ch/finance_stock/";
+  return new Promise((resolve, reject) => {
+    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
+    	if (err) reject("request error");
+    	const $ = cheerio.load(res.text);
+    	let hotList = []
+			
+    	$('.list .item .detail').each( function(index){
+    		if(index !== 0){
+					const rank = 100;
+					const title = $(this).children().eq(0).children().text();
+					const link = $(this).children().eq(0).children().attr('href');
+					const hotValue = "100";
+					hotList.push({
+						rank,
+						title,
+						link,
+						hotValue
+					});
+    		}
+    	});
+			hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('zhengquan_hot', hotList);
+    })
+  });
+}
+
+
+/* 51cto 技术资讯 */
+function get_jishu_hot_List() {
+	const bdHeatUrl = "https://news.51cto.com/";
+  return new Promise((resolve, reject) => {
+    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
+    	if (err) reject("request error");
+    	const $ = cheerio.load(res.text);
+    	let hotList = []
+			
+    	$('.home-left-list ul li .rinfo').each( function(index){
+    		if(index !== 0){
+					const rank = 100;
+					const title = $(this).children().eq(0).text();
+					const link = $(this).children().eq(0).attr('href');
+					const hotValue = "100";
+					hotList.push({
+						rank,
+						title,
+						link,
+						hotValue
+					});
+    		}
+    	});
+			hotList.length ? resolve(hotList) : reject("errer");
+			updateHandle('jishu_hot', hotList);
+    })
+  });
+}
+
+
 // 定时触发
 const rule = new nodeSchedule.RecurrenceRule();  
 rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
+// rule = "30 * * * * *"
 nodeSchedule.scheduleJob(rule, function () {
   try {
 		// 微博
@@ -153,9 +202,40 @@ nodeSchedule.scheduleJob(rule, function () {
 		// 百度
 		// get_baidu_hot_List();
 		
+		// 腾讯
+		// get_zhengquan_hot_List();
+		
+		// 技术资讯
+		// get_jishu_hot_List();
+		
   } catch (error) {
     console.error(error);
   }
 });
+
+
+// -------------------  以上为资讯的自动更新操作 -------------------------
+
+
+// -------------------  以下为资讯查询 -------------------------
+/*
+	* 获取资讯列表
+	* 参数 q = '表名称'
+ * */
+router.get('/news', (req, res, next) => {
+	let table_name = req.query.q;
+	let sql = `SELECT * FROM ${table_name}`;
+	db.query(sql, [], function(result,fields){
+		if(result.code){
+			res.json(result);
+		}else{
+			res.json(result);
+		}
+	})
+});
+
+
+
+
 
 module.exports = router;
