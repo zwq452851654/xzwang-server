@@ -223,6 +223,7 @@ nodeSchedule.scheduleJob(rule, function () {
 	* 参数 q = '表名称'
  * */
 router.get('/news', (req, res, next) => {
+	console.log(req.cookies)
 	let table_name = req.query.q;
 	let sql = `SELECT * FROM ${table_name}`;
 	db.query(sql, [], function(result,fields){
