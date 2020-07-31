@@ -2,6 +2,9 @@ var express = require('express');
 var router = express.Router();
 const url = require("url");
 var db = require('../../mysql');
+var cookieParser = require('cookie-parser')
+
+var { createToken } = require("../../common/token.js")
 
 var { bodyDealWith } = require('../../common');
 
@@ -57,7 +60,9 @@ router.post('/login', (req, res, next) =>{
 	let sql = `select * from user_account where account='${body.account}' and pass='${body.pass}'`
 	db.query(sql, function(result, fields){
 		if(fields.length > 0){
-			res.setHeader('Set-cookie','name=zhang');
+			let v = createToken(body.account);
+			// res.setHeader('Set-cookie','token=' + v);
+			res.cookie("token", {token: v}, {maxAge: 60000});
 			res.json({
 				'code': 1,
 				'msg': '登录成功'
