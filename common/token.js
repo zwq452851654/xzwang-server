@@ -23,15 +23,15 @@ const createToken = (username)=>{
 
 //验证token
 const verifyTokenMiddle = (req,res,next)=>{
-    let token = getCookie("token");
-    jwt.verify(token, scret, function(err, decoded) {
-        if(err){
-            return res.json({
-                state:false,
-                info:"token验证失败"
-            })
-        }
-        next()
+    let token = req.headers.token;
+    jwt.verify(token, secret, function(err, decoded) { // decoded:指的是tokneid解码后用户信息
+				if(err){
+						return res.json({
+								state:false,
+								info:"token验证失败"
+						})
+				}
+				next()
   });  
 }
 

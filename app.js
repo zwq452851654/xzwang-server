@@ -29,18 +29,36 @@ var indexRouter = require('./routes/index');
 var news = require('./routes/home/news');
 var nav = require('./routes/home/nav');
 var reg = require('./routes/user/index');
+var { verifyTokenMiddle } = require("./common/token.js")
 
 
+// 需要验证token的接口
+let apiArr = ['/nav/queryNav']
 
 //设置跨域访问
 app.all('*', (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     // res.header("Access-Control-Allow-Headers", "X-Requested-With");
+		res.header('Access-Control-Allow-Headers',"Token");
     res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
     res.header("X-Powered-By", ' 3.2.1');
     res.header("Content-Type", "application/json;charset=utf-8");
-    next();
+		
+		let intercept = false;
+		let url = req._parsedUrl.pathname;
+		for(let i=0; i<apiArr.length; i++){
+			if(url == '/api'+apiArr[i]){
+				intercept = true;
+				break
+			}
+		}
+		
+		if(intercept){
+			verifyTokenMiddle(req, res, next)
+		}else{
+			next();
+		}
 });
 
 

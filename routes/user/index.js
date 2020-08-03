@@ -65,7 +65,8 @@ router.post('/login', (req, res, next) =>{
 			res.cookie("token", {token: v}, {maxAge: 60000});
 			res.json({
 				'code': 1,
-				'msg': '登录成功'
+				'msg': '登录成功',
+				'token': v
 			})
 		}
 	})
