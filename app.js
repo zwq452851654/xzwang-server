@@ -55,7 +55,14 @@ app.all('*', (req, res, next) => {
 		}
 		
 		if(intercept){
-			verifyTokenMiddle(req, res, next)
+			verifyTokenMiddle(req, res, next, function(data){
+				if(data.state){
+					next();
+				}else{
+					res.json(data)
+				}
+			});
+			
 		}else{
 			next();
 		}

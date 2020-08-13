@@ -60,7 +60,7 @@ router.post('/login', (req, res, next) =>{
 	let sql = `select * from user_account where account='${body.account}' and pass='${body.pass}'`
 	db.query(sql, function(result, fields){
 		if(fields.length > 0){
-			let v = createToken(body.account);
+			let v = createToken(body.account, fields[0].userId);
 			// res.setHeader('Set-cookie','token=' + v);
 			res.cookie("token", {token: v}, {maxAge: 60000});
 			res.json({

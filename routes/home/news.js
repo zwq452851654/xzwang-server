@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 const url = require("url");
 var db = require('../../mysql');
-var jwt = require('jsonwebtoken');
 
 const cheerio = require("cheerio");
 const superagent = require("superagent");
@@ -197,16 +196,16 @@ rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
 nodeSchedule.scheduleJob(rule, function () {
   try {
 		// 微博
-    // getHotSearchList();
+    getHotSearchList();
 		
 		// 百度
-		// get_baidu_hot_List();
+		get_baidu_hot_List();
 		
 		// 腾讯
-		// get_zhengquan_hot_List();
+		get_zhengquan_hot_List();
 		
 		// 技术资讯
-		// get_jishu_hot_List();
+		get_jishu_hot_List();
 		
   } catch (error) {
     console.error(error);

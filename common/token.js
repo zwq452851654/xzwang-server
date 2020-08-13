@@ -13,25 +13,43 @@ const getCookie = (key)=>{
     }
 }
 
-//创建token
-const createToken = (username)=>{
+/**
+ * 根据用户名称、用户编号创建token
+ * username
+ * userId
+ * */
+const createToken = (username, userId)=>{
     const payload = {
-        user:username
+        user:username,
+				userId,
     }
     return jwt.sign(payload, secret,{expiresIn:'1h'});
 }
 
-//验证token
-const verifyTokenMiddle = (req,res,next)=>{
+/**
+ * 验证token
+ * state: false验证失败，true成功 
+ * data: 验证后的结果返回
+ * decoded:指的是tokneid解码后用户信息
+ * callback: 回调函数
+ * */
+
+const verifyTokenMiddle = (req, res, next, callback)=>{
     let token = req.headers.token;
-    jwt.verify(token, secret, function(err, decoded) { // decoded:指的是tokneid解码后用户信息
+    jwt.verify(token, secret, function(err, decoded) {
+				let data = {}
 				if(err){
-						return res.json({
-								state:false,
-								info:"token验证失败"
-						})
+					data = {
+						state: false,
+						info: "token验证失败"
+					}
+				}else{
+					data = {
+						state: true,
+						info: decoded
+					}
 				}
-				next()
+				callback(data)
   });  
 }
 
