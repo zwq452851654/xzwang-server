@@ -18,7 +18,7 @@ const createUserID = (body, res)=>{
 	d = d < 10 ? '0'+d : d;
 	let n = ('000000' + Math.floor(Math.random() * 999999)).slice(-6);
 	let u = '_'+y+m+d+n;
-	let sql = `Select * from user_account where userId='${u}' or account='${body.account}'`
+	let sql = `SELECT * FROM user_account WHERE userId='${u}' OR account='${body.account}'`
 	db.query(sql, function(result,fields){
 		if(fields.length == 0){
 			body.userId = u;

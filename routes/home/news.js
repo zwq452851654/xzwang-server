@@ -11,7 +11,7 @@ const nodeSchedule = require("node-schedule");
 const charset = require("superagent-charset");
 charset(superagent);
 
-var { bodyDealWith, batchDealWith } = require('../../common');
+var { batchDealWith } = require('../../common');
 
 
 /* 微博热搜 */
