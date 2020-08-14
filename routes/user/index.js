@@ -40,7 +40,7 @@ const createUserID = (body, res)=>{
 const addUser = (body, res, u)=>{
 	let field = ['userId','phone','email','account','pass','openId'];
 	bodyDealWith(field, body, function(data){
-		sql = `INSERT INTO user_account(${data.name}) VALUES (${data.questionMark}) `
+		let sql = `INSERT INTO user_account(${data.name}) VALUES (${data.questionMark}) `
 		db.query(sql, data.data, function(result,fields){
 			result.data = [];
 			res.json(result)

@@ -39,24 +39,40 @@ router.get('/queryNav', (req, res, next) => {
  router.get('/query_often_nav', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
-		let sql = `SELECT n.dhbh,n.name,n.icon,n.url FROM ofent_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}'`
+		let sql = `SELECT n.dhbh,n.name,n.icon,n.url FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}'`
 		db.query(sql, [], function(result, fields){
 			res.json(result)
 		})
 	})
  })
+
+
+ 
+
+
+
+function createId(){
+	let time = new Date().getTime() + '';
+	let m,str="D";
+	for(let i=0; i<5; i++){
+		m = Math.random()*time.length
+		str += time.slice(m, ++m);
+	}
+	return str
+}
  
 /**
   * 常用导航-添加
   * */
   router.post('/addOftenNav', (req, res, next) =>{
-    let dhbh = req.body.dhbh;
+    let params = req.body;
     verifyTokenMiddle(req, res, next, function(data){
     	let userId = data.info.userId;
-      let field = ['*id', '*userId', '*dhbh'];
-      let d = { 'id':'D007', 'userId':userId, 'dhbh':dhbh }
+      let field = ['*id', '*userId', '*dhbh', '*order'];
+			let id = createId();
+      let d = { 'id': id, 'userId':userId, 'dhbh':params.dhbh, 'order': Number(params.len)+1 }
       bodyDealWith(field, d, function(data){
-        console.log('==', data)
+				console.log(data)
         let sql = `INSERT INTO often_nav(${data.name}) VALUES (${data.questionMark})`
         db.query(sql, data.data, function(result, fields){
         	res.json(result)
@@ -69,10 +85,10 @@ router.get('/queryNav', (req, res, next) => {
   * 常用导航-删除
   * */
   router.post('/delOftenNav', (req, res, next) =>{
-    let params = url.parse(req.url, true).query;
+    let dhbh = req.body.dhbh;
     verifyTokenMiddle(req, res, next, function(data){
     	let userId = data.info.userId;
-    	let sql = `delete from often_nav where userId='${userId}' and dhbh='${params.dhbh}'`
+    	let sql = `DELETE FROM often_nav WHERE userId='${userId}' AND dhbh='${dhbh}'`
     	db.query(sql, [], function(result, fields){
     		res.json(result)
     	})
