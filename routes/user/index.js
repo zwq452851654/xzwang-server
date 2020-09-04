@@ -57,7 +57,7 @@ router.post('/reg', (req, res, next) =>{
 router.post('/login', (req, res, next) =>{
 	let body = req.body;
 	// 用户名登录
-	let sql = `select * from user_account where account='${body.account}' and pass='${body.pass}'`
+	let sql = `select * from user_account where account='${body.account}' and pass='${body.md5Pass}'`
 	db.query(sql, function(result, fields){
 		if(fields.length > 0){
 			let v = createToken(body.account, fields[0].userId);

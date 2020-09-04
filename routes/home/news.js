@@ -191,21 +191,21 @@ function get_jishu_hot_List() {
 
 // 定时触发
 const rule = new nodeSchedule.RecurrenceRule();  
-rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
+// rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
 // rule = "30 * * * * *"
-nodeSchedule.scheduleJob(rule, function () {
+nodeSchedule.scheduleJob("30 * * * * *", function () {
   try {
 		// 微博
-    getHotSearchList();
+    // getHotSearchList();
 		
 		// 百度
-		get_baidu_hot_List();
+		// get_baidu_hot_List();
 		
 		// 腾讯
-		get_zhengquan_hot_List();
+		// get_zhengquan_hot_List();
 		
 		// 技术资讯
-		get_jishu_hot_List();
+		// get_jishu_hot_List();
 		
   } catch (error) {
     console.error(error);

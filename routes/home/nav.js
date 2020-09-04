@@ -35,20 +35,15 @@ router.get('/queryNav', (req, res, next) => {
  * 查询常用导航
  * 根据token解析出用户编号，进行查询
  * */
- 
  router.get('/query_often_nav', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
-		let sql = `SELECT n.dhbh,n.name,n.icon,n.url FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}'`
+		let sql = `SELECT n.dhbh,n.name,n.icon,n.url,o.order FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}' ORDER BY o.order`
 		db.query(sql, [], function(result, fields){
 			res.json(result)
 		})
 	})
  })
-
-
- 
-
 
 
 function createId(){
@@ -68,11 +63,10 @@ function createId(){
     let params = req.body;
     verifyTokenMiddle(req, res, next, function(data){
     	let userId = data.info.userId;
-      let field = ['*id', '*userId', '*dhbh', '*order'];
+      let field = ['*id', '*userId', '*dhbh'];
 			let id = createId();
-      let d = { 'id': id, 'userId':userId, 'dhbh':params.dhbh, 'order': Number(params.len)+1 }
+      let d = { 'id': id, 'userId':userId, 'dhbh':params.dhbh }
       bodyDealWith(field, d, function(data){
-				console.log(data)
         let sql = `INSERT INTO often_nav(${data.name}) VALUES (${data.questionMark})`
         db.query(sql, data.data, function(result, fields){
         	res.json(result)
@@ -95,5 +89,27 @@ function createId(){
     })
   })
   
+	
+	/**
+	* 常用导航-自定义排序
+	* */
+	router.post('/setOftenNavOrder', (req, res, next) =>{
+		let params = req.body;
+		let zd = params.zd;
+		let bd = params.bd;
+		verifyTokenMiddle(req, res, next, function(data){
+			let userId = data.info.userId;
+			let sql = `UPDATE often_nav t1 
+				JOIN often_nav t2
+				ON (t1.order = ${zd} AND t2.order = ${bd} AND t1.userId = '${userId}' AND t2.userId = '${userId}')
+				SET t1.dhbh = t2.dhbh,t2.dhbh=t1.dhbh,t1.id = t2.id,t2.id=t1.id;`
+				db.query(sql, [], function(result, fields){
+					res.json(result)
+				})
+		})
+	})
+	
+	
+	
 
 module.exports = router;
