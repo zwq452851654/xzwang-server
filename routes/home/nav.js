@@ -16,15 +16,42 @@ router.get('/queryAllNav', (req, res, next) => {
 });
 
 /**
+ * 查询搜索项
+ * */ 
+router.get('/querySearchList', (req, res, next) => {
+	verifyTokenMiddle(req, res, next, function(data){
+		let userId = data.info.userId;
+		let sql = `SELECT s.name,s.value,s.url,u.searchIAims FROM search_list s,user_specific u WHERE u.userId='${userId}'`
+		db.query(sql, [], function(result, fields){
+			res.json(result)
+		})
+	})
+});
+
+/* 
+ * 设置搜索项
+ */
+router.get('/setSearchAims', (req, res, next) => {
+	let params = req.query;
+	verifyTokenMiddle(req, res, next, function(data){
+		let userId = data.info.userId;
+		let sql = `UPDATE user_specific SET searchIAims='${params.value}' WHERE userId='${userId}'`
+		db.query(sql, [], function(result, fields){
+			res.json(result)
+		})
+	})
+});
+
+/**
  * 查询导航
  * @param {parentValue}  = [value] 
  * @param {childValue}  = [value] 
  * */ 
 router.get('/queryNav', (req, res, next) => {
 	let params = req.query;
-	let sql = `SELECT * FROM all_navigation WHERE parentValue=${params.parentValue}`
+	let sql = `SELECT * FROM all_navigation WHERE parentValue='${params.parentValue}'`
 	if(params.childValue){
-		sql = `SELECT * FROM all_navigation WHERE parentValue=${params.parentValue} and childValue=${params.childValue}`
+		sql = `SELECT * FROM all_navigation WHERE parentValue='${params.parentValue}' and childValue='${params.childValue}'`
 	}
 	db.query(sql, [], function(result,fields){
 		res.json(result)
@@ -34,6 +61,7 @@ router.get('/queryNav', (req, res, next) => {
 /**
  * 查询常用导航
  * 根据token解析出用户编号，进行查询
+ * 如未登录查询默认常用导航
  * */
  router.get('/query_often_nav', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){

@@ -33,7 +33,7 @@ var { verifyTokenMiddle } = require("./common/token.js")
 
 
 // 需要验证token的接口
-let apiArr = ['/nav/queryNav']
+let apiArr = []
 
 //设置跨域访问
 app.all('*', (req, res, next) => {
