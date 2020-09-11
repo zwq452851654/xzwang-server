@@ -66,6 +66,7 @@ router.get('/queryNav', (req, res, next) => {
  router.get('/query_often_nav', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
+		console.log('====', userId)
 		let sql = `SELECT n.dhbh,n.name,n.icon,n.url,o.order FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}' ORDER BY o.order`
 		db.query(sql, [], function(result, fields){
 			res.json(result)
