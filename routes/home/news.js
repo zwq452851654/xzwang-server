@@ -227,9 +227,9 @@ router.get('/news', (req, res, next) => {
 	let sql = `SELECT * FROM ${table_name}`;
 	db.query(sql, [], function(result,fields){
 		if(result.code){
-			res.json(result);
+			res.send(result);
 		}else{
-			res.json(result);
+			res.send(result);
 		}
 	})
 });

@@ -5,13 +5,20 @@ var db = require('../../mysql');
 var { verifyTokenMiddle } = require("../../common/token.js")
 var { bodyDealWith } = require('../../common/index.js')
 
+
+var onLogin = {
+	code: 1,
+	msg: '未登录',
+	data: []
+}
+
 /**
  * 查询所有导航
  * */ 
 router.get('/queryAllNav', (req, res, next) => {
 	let sql = `SELECT * FROM all_navigation`
 	db.query(sql, [], function(result,fields){
-		res.json(result)
+		res.send(result)
 	})
 });
 
@@ -21,9 +28,14 @@ router.get('/queryAllNav', (req, res, next) => {
 router.get('/querySearchList', (req, res, next) => {
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
-		let sql = `SELECT s.name,s.value,s.url,u.searchIAims FROM search_list s,user_specific u WHERE u.userId='${userId}'`
+		let sql;
+		if(userId){
+			sql = `SELECT s.name,s.value,s.url,u.searchIAims FROM search_list s,user_specific u WHERE u.userId='${userId}'`
+		}else{
+			sql = `SELECT s.id,s.name,s.value,s.url,d.value searchIAims FROM search_list s,default_data d WHERE d.type=2;`
+		}
 		db.query(sql, [], function(result, fields){
-			res.json(result)
+			res.send(result)
 		})
 	})
 });
@@ -37,7 +49,7 @@ router.get('/setSearchAims', (req, res, next) => {
 		let userId = data.info.userId;
 		let sql = `UPDATE user_specific SET searchIAims='${params.value}' WHERE userId='${userId}'`
 		db.query(sql, [], function(result, fields){
-			res.json(result)
+			res.send(result)
 		})
 	})
 });
@@ -54,7 +66,7 @@ router.get('/queryNav', (req, res, next) => {
 		sql = `SELECT * FROM all_navigation WHERE parentValue='${params.parentValue}' and childValue='${params.childValue}'`
 	}
 	db.query(sql, [], function(result,fields){
-		res.json(result)
+		res.send(result)
 	})
 });
 
@@ -66,13 +78,34 @@ router.get('/queryNav', (req, res, next) => {
  router.get('/query_often_nav', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
-		console.log('====', userId)
-		let sql = `SELECT n.dhbh,n.name,n.icon,n.url,o.order FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}' ORDER BY o.order`
-		db.query(sql, [], function(result, fields){
-			res.json(result)
-		})
+		if(userId){
+			let sql = `SELECT n.dhbh,n.name,n.icon,n.url,o.order FROM often_nav o,all_navigation n WHERE o.dhbh = n.dhbh and o.userId='${userId}' ORDER BY o.order`
+			db.query(sql, [], function(result, fields){
+				if(result.data.length > 0){
+					res.send(result)
+				}else{
+					query_default_often_nav(res)
+				}
+			})
+		}else{
+			res.send(onLogin)
+		}
 	})
  })
+
+
+ /**
+ * 查询默认常用导航
+ * 在已登录的情况下未查询到具体的常用导航设置时查询默认导航
+ * */
+function query_default_often_nav(res) {
+ 	let sql = `SELECT * FROM default_data,all_navigation WHERE type=1 AND default_data.value=all_navigation.dhbh`
+ 	db.query(sql, [], function(result, fields){
+		res.send(result)
+	})
+ }
+
+
 
 
 function createId(){
@@ -98,7 +131,7 @@ function createId(){
       bodyDealWith(field, d, function(data){
         let sql = `INSERT INTO often_nav(${data.name}) VALUES (${data.questionMark})`
         db.query(sql, data.data, function(result, fields){
-        	res.json(result)
+        	res.send(result)
         })
       })
     })
@@ -113,7 +146,7 @@ function createId(){
     	let userId = data.info.userId;
     	let sql = `DELETE FROM often_nav WHERE userId='${userId}' AND dhbh='${dhbh}'`
     	db.query(sql, [], function(result, fields){
-    		res.json(result)
+    		res.send(result)
     	})
     })
   })
@@ -133,7 +166,7 @@ function createId(){
 				ON (t1.order = ${zd} AND t2.order = ${bd} AND t1.userId = '${userId}' AND t2.userId = '${userId}')
 				SET t1.dhbh = t2.dhbh,t2.dhbh=t1.dhbh,t1.id = t2.id,t2.id=t1.id;`
 				db.query(sql, [], function(result, fields){
-					res.json(result)
+					res.send(result)
 				})
 		})
 	})

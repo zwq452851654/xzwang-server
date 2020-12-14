@@ -37,19 +37,19 @@ const createToken = (username, userId)=>{
 const verifyTokenMiddle = (req, res, next, callback)=>{
     let token = req.headers.token;
     jwt.verify(token, secret, function(err, decoded) {
-				let data = {}
-				if(err){
-					data = {
-						state: false,
-						info: "token验证失败"
-					}
-				}else{
-					data = {
-						state: true,
-						info: decoded
-					}
-				}
-				callback(data)
+		let data = {}
+		if(err){
+			data = {
+				state: false,
+				info: "token验证失败"
+			}
+		}else{
+			data = {
+				state: true,
+				info: decoded
+			}
+		}
+        callback(data)
   });  
 }
 
