@@ -18,30 +18,33 @@ var { batchDealWith } = require('../../common');
 function getHotSearchList() {
 	const weiboURL = "https://s.weibo.com";
 	const hotSearchURL = weiboURL + "/top/summary?cate=realtimehot";
-  return new Promise((resolve, reject) => {
-    superagent.get(hotSearchURL, (err, res) => {
-      if (err) reject("request error");
-      const $ = cheerio.load(res.text);
-      let hotList = [];
-      $("#pl_top_realtimehot table tbody tr").each(function (index) {
-        if (index !== 0) {
-          const $td = $(this).children().eq(1);
-          const link = weiboURL + $td.find("a").attr("href");
-          const text = $td.find("a").text();
-          const hotValue = $td.find("span").text();
-          hotList.push({
-            rank: index,
-            link,
-            title: text,
-            hotValue
-          });
-        }
-      });
-      hotList.length ? resolve(hotList) : reject("errer");
-			updateHandle('weibo_hot', hotList);
-    });
-  });
+  	return new Promise((resolve, reject) => {
+	    superagent.get(hotSearchURL, (err, res) => {
+	      if (err) reject("request error");
+	      console.log('+++', res)
+	      const $ = cheerio.load(res.text);
+	      let hotList = [];
+	      $("#pl_top_realtimehot table tbody tr").each(function (index) {
+	        if (index !== 0) {
+	          const $td = $(this).children().eq(1);
+	          const link = weiboURL + $td.find("a").attr("href");
+	          const text = $td.find("a").text();
+	          const hotValue = $td.find("span").text();
+	          hotList.push({
+	            rank: index,
+	            link,
+	            title: text,
+	            hotValue
+	          });
+	        }
+	      });
+	      hotList.length ? resolve(hotList) : reject("errer");
+				updateHandle('weibo_hot', hotList);
+		});
+  	});
 }
+
+getHotSearchList();
 
 
 // 执行插入函数
@@ -193,19 +196,19 @@ function get_jishu_hot_List() {
 const rule = new nodeSchedule.RecurrenceRule();  
 // rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
 // rule = "30 * * * * *"
-nodeSchedule.scheduleJob("30 * * * * *", function () {
+nodeSchedule.scheduleJob("10 * * * * *", function () {
   try {
-		// 微博
+	// 微博
     // getHotSearchList();
 		
-		// 百度
-		// get_baidu_hot_List();
-		
-		// 腾讯
-		// get_zhengquan_hot_List();
-		
-		// 技术资讯
-		// get_jishu_hot_List();
+	// 百度
+	// get_baidu_hot_List();
+	
+	// 腾讯
+	// get_zhengquan_hot_List();
+	
+	// 技术资讯
+	// get_jishu_hot_List();
 		
   } catch (error) {
     console.error(error);
