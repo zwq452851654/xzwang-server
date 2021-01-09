@@ -21,7 +21,7 @@ function getHotSearchList() {
   	return new Promise((resolve, reject) => {
 	    superagent.get(hotSearchURL, (err, res) => {
 	      if (err) reject("request error");
-	      console.log('+++', res)
+	      // console.log('+++', res)
 	      const $ = cheerio.load(res.text);
 	      let hotList = [];
 	      $("#pl_top_realtimehot table tbody tr").each(function (index) {
@@ -204,7 +204,7 @@ nodeSchedule.scheduleJob("10 * * * * *", function () {
 	// 百度
 	// get_baidu_hot_List();
 	
-	// 腾讯
+	// 证券
 	// get_zhengquan_hot_List();
 	
 	// 技术资讯
@@ -225,7 +225,7 @@ nodeSchedule.scheduleJob("10 * * * * *", function () {
 	* 参数 q = '表名称'
  * */
 router.get('/news', (req, res, next) => {
-	console.log(req.cookies)
+	// console.log(req.cookies)
 	let table_name = req.query.q;
 	let sql = `SELECT * FROM ${table_name}`;
 	db.query(sql, [], function(result,fields){

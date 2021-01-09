@@ -4,7 +4,7 @@ const url = require("url");
 var db = require('../../mysql');
 var cookieParser = require('cookie-parser')
 
-var { createToken } = require("../../common/token.js")
+var { createToken, verifyTokenMiddle } = require("../../common/token.js")
 
 var { bodyDealWith } = require('../../common');
 
@@ -69,6 +69,26 @@ router.post('/login', (req, res, next) =>{
 				'token': v
 			})
 		}
+	})
+})
+
+router.get('/userInfo', (req, res, next) =>{
+	verifyTokenMiddle(req, res, next, function(data){
+		let userId = data.info.userId;
+		if(userId){
+			let sql = `SELECT * FROM user_specific WHERE userId='${userId}'`
+			db.query(sql, [], function(result, fields){
+				result.data[0]['img_url'] = 'https://dss0.bdstatic.com/l4oZeXSm1A5BphGlnYG/skin/859.jpg?2'
+				res.send(result)
+			})
+		}else{
+			res.json({
+				code: 1,
+				msg: '未登录',
+				data: []
+			})
+		}
+		
 	})
 })
 
