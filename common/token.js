@@ -21,7 +21,7 @@ const getCookie = (key)=>{
 const createToken = (username, userId)=>{
     const payload = {
         user:username,
-				userId,
+	    userId,
     }
     return jwt.sign(payload, secret,{expiresIn:'1h'});
 }

@@ -9,7 +9,9 @@ const bodyParser = require('body-parser');
 
 
 
+
 var app = express();
+
 var port = normalizePort(process.env.PORT || 9000);
 app.set('port', port);
 var server = http.createServer(app);
@@ -24,13 +26,26 @@ app.use(bodyParser.json());//数据JSON类型
 app.use(bodyParser.urlencoded({ extended: false }));//解析post请求数据
 
 
+var { verifyTokenMiddle } = require("./common/token.js");
 // 接口对应文件
 var indexRouter = require('./routes/index');
 var news = require('./routes/home/news');
 var nav = require('./routes/home/nav');
 var collect = require('./routes/home/collect');
 var reg = require('./routes/user/index');
-var { verifyTokenMiddle } = require("./common/token.js")
+var upload = require('./routes/upload/index');
+var bg = require('./routes/bg/index');
+
+
+
+
+app.use('/api', indexRouter);
+app.use('/api/news', news);
+app.use('/api/nav', nav);
+app.use('/api/collect', collect);
+app.use('/api/user', reg);
+app.use('/api/upload', upload);
+app.use('/api/bg', bg);
 
 
 // 需要验证token的接口
@@ -81,11 +96,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api', indexRouter);
-app.use('/api/news', news);
-app.use('/api/nav', nav);
-app.use('/api/collect', collect);
-app.use('/api/user', reg);
+
 
 
 // catch 404 and forward to error handler

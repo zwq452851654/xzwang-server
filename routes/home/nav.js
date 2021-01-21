@@ -30,9 +30,17 @@ router.get('/querySearchList', (req, res, next) => {
 		let userId = data.info.userId;
 		let sql;
 		if(userId){
-			sql = `SELECT s.name,s.value,s.url,u.searchIAims FROM search_list s,user_specific u WHERE u.userId='${userId}'`
+			sql = `
+				SELECT s.name,s.value,s.url,s.icon,u.searchIAims 
+				FROM search_list s,user_specific u 
+				WHERE u.userId='${userId}'
+			`
 		}else{
-			sql = `SELECT s.id,s.name,s.value,s.url,d.value searchIAims FROM search_list s,default_data d WHERE d.type=2;`
+			sql = `
+				SELECT s.id,s.name,s.value,s.url,s.icon,d.value searchIAims 
+				FROM search_list s,default_data d 
+				WHERE d.type=2;
+			`
 		}
 		db.query(sql, [], function(result, fields){
 			res.send(result)
@@ -43,14 +51,19 @@ router.get('/querySearchList', (req, res, next) => {
 /* 
  * 设置搜索项
  */
-router.get('/setSearchAims', (req, res, next) => {
-	let params = req.query;
+router.post('/setSearchAims', (req, res, next) => {
+	let params = req.body;
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
-		let sql = `UPDATE user_specific SET searchIAims='${params.value}' WHERE userId='${userId}'`
-		db.query(sql, [], function(result, fields){
-			res.send(result)
-		})
+		if(userId){
+			let sql = `UPDATE user_specific SET searchIAims='${params.value}' WHERE userId='${userId}'`
+			db.query(sql, [], function(result, fields){
+				res.send(result)
+			})
+		}else{
+			res.json(onLogin)
+		}
+		
 	})
 });
 

@@ -44,7 +44,7 @@ function getHotSearchList() {
   	});
 }
 
-getHotSearchList();
+// getHotSearchList();
 
 
 // 执行插入函数

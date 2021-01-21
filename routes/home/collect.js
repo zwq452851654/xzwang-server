@@ -1,9 +1,8 @@
-var express = require('express');
-var router = express.Router();
-const url = require("url");
-var db = require('../../mysql');
-var { verifyTokenMiddle } = require("../../common/token.js")
-var { bodyDealWith } = require('../../common/index.js')
+const express = require('express');
+const router = express.Router();
+const db = require('../../mysql');
+const { verifyTokenMiddle } = require("../../common/token.js")
+const { bodyDealWith } = require('../../common/index.js')
 
 
 var onLogin = {
@@ -12,6 +11,10 @@ var onLogin = {
 	data: []
 }
 
+
+/**
+ * 根据用户ID查询收藏夹的一级列表
+ * */ 
 router.get('/queryCollect', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data) {
 		let userId = data.info.userId;
@@ -20,10 +23,15 @@ router.get('/queryCollect', (req, res, next) =>{
 			db.query(sql, [], function (result, fields) {
 				res.send(result)
 			})
+		}else{
+			res.json(onLogin)
 		}
 	})
 })
 
+/**
+ * 根据用户ID、编号查询收藏夹对应的二级列表
+ * */ 
 router.get('/querySecondCollect', (req, res, next) =>{
 	let params = req.query;
 	verifyTokenMiddle(req, res, next, function(data) {
@@ -48,7 +56,6 @@ router.post('/addCollect', (req, res, next) => {
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
 		if(userId){
-			console.log(params)
 			let field,d,sql;
 			let id = createId();
 		    if(params.type == 2){
@@ -74,6 +81,30 @@ router.post('/addCollect', (req, res, next) => {
 	})
 });
 
+
+/* 
+ * 收藏夹 - 新增文件夹
+ */
+router.post('/addFolder', (req, res, next)=>{
+	let params = req.body;
+	verifyTokenMiddle(req, res, next, function(data){
+		let userId = data.info.userId;
+		if(userId){
+			let id = createId();
+			let field = ['*bh', '*userId', '*mc', '*type'];
+		    let d = { 'bh': id, 'userId':userId, 'mc':params.mc,'type':params.type};
+			bodyDealWith(field, d, function(data){
+				let sql = `INSERT INTO parent_collect(${data.name}) VALUES(${data.questionMark})`;
+				db.query(sql, data.data, function(result, fields){
+		        	res.send(result)
+		        })
+			})
+		}else{
+			res.send(onLogin)
+		}
+	})
+
+})
 
 
 function createId(){
