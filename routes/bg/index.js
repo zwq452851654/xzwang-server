@@ -21,7 +21,10 @@ router.post('/uploadBg', (req, res, next) =>{
 		bodyDealWith(field, d, function(data){
 	    	sql = `INSERT INTO bg_picture(${data.name}) VALUES (${data.questionMark})`
 	        db.query(sql, data.data, function(result, fields){
-	        	res.send(result)
+	        	sql = `SELECT * FROM file_table WHERE bh='${params.bh}'`
+	        	db.query(sql, data.data, function(result, fields){
+	        		res.send(result)
+	        	})
 	        })
 	    })
 	})
@@ -30,9 +33,10 @@ router.post('/uploadBg', (req, res, next) =>{
 
 /**
 * 查出所有的背景图进行展示
+* 只查询level等于0的
 */
 router.get('/queryBgPic', (req, res, next) =>{
-	let sql = `SELECT * FROM bg_picture b,file_table f WHERE b.bh=f.bh`;
+	let sql = `SELECT * FROM bg_picture b,file_table f WHERE b.bh=f.bh AND b.level=0`;
 	db.query(sql, [], function (result, fields) {
 		res.send(result)
 	})
@@ -44,7 +48,6 @@ router.get('/queryBgPic', (req, res, next) =>{
 */
 router.post('/setBg', (req, res, next) =>{
 	let params = req.body;
-	console.log(params)
 	verifyTokenMiddle(req, res, next, function(data) {
 		let userId = data.info.userId;
 		if(userId){
@@ -52,7 +55,6 @@ router.post('/setBg', (req, res, next) =>{
 			db.query(sql, [], function(result, fields){
 				let sql = `SELECT * FROM user_specific u, file_table f WHERE u.userId='${userId}' AND u.bgImg=f.bh`
 				db.query(sql, [], function(result, fields){
-					result.data[0]['img_url'] = 'https://dss0.bdstatic.com/l4oZeXSm1A5BphGlnYG/skin/859.jpg?2'
 					res.send(result)
 				})
 			})

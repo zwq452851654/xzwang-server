@@ -38,7 +38,6 @@ router.get('/querySecondCollect', (req, res, next) =>{
 		let userId = data.info.userId;
 		if(userId){
 			let sql = `SELECT * FROM child_collect WHERE userId='${userId}' AND parentId='${params.bh}'`;
-			console.log(sql)
 			db.query(sql, [], function (result, fields) {
 				res.send(result)
 			})
