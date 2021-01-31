@@ -35,6 +35,8 @@ var collect = require('./routes/home/collect');
 var reg = require('./routes/user/index');
 var upload = require('./routes/upload/index');
 var bg = require('./routes/bg/index');
+var glzx = require('./routes/glzx/index');
+var message = require('./routes/message/index');
 
 
 
@@ -46,6 +48,8 @@ app.use('/api/collect', collect);
 app.use('/api/user', reg);
 app.use('/api/upload', upload);
 app.use('/api/bg', bg);
+app.use('/api/glzx', glzx);
+app.use('/api/message', message);
 
 
 // 需要验证token的接口

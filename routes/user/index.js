@@ -76,7 +76,7 @@ router.get('/userInfo', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;
 		if(userId){
-			let sql = `SELECT * FROM user_specific u, file_table f WHERE u.userId='${userId}' AND u.bgImg=f.bh`
+			let sql = `SELECT *,u.userId FROM user_specific u, file_table f WHERE u.userId='${userId}' AND u.bgImg=f.bh`
 			db.query(sql, [], function(result, fields){
 				res.send(result)
 			})
