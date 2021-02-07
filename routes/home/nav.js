@@ -2,8 +2,9 @@ var express = require('express');
 var router = express.Router();
 const url = require("url");
 var db = require('../../mysql');
-var { verifyTokenMiddle } = require("../../common/token.js")
-var { bodyDealWith } = require('../../common/index.js')
+var { verifyTokenMiddle } = require("../../common/token.js");
+var { bodyDealWith } = require('../../common/index.js');
+const request = require('request');
 
 
 var onLogin = {
@@ -219,6 +220,72 @@ router.post('/addBcyl', (req, res, next) => {
 
 	})
 })
+
+
+/**
+ * 遗漏补充-审核
+ * */
+ router.post('/navReview', (req, res, next) =>{
+ 	let params = req.body;
+	verifyTokenMiddle(req, res, next, function (data) {
+		let userId = data.info.userId;
+		if(userId){
+			let field = ['*name','icon','*url','*parentName','*parentValue','childName','childvalue'];
+			let d = {
+				'name': params.name,
+				'icon': params.icon,
+				'url': params.url,
+				'parentName': params.parentName,
+				'parentValue': params.parentValue,
+				'childName': params.childName,
+				'childvalue': params.childvalue
+			}
+			bodyDealWith(field, d, function (data) {
+				let sql;
+				// 通过审核
+				if(params.state == '1'){
+					sql = `
+						INSERT INTO all_navigation(${data.name}) VALUES (${data.questionMark});
+						UPDATE nav_bcyl SET state='${params.state}' WHERE id='${params.id}'
+					`
+					db.query(sql, data.data, function (result, fields) {
+						res.send(result)
+					})
+				}else{
+					// 审核拒绝
+					sql = `UPDATE nav_bcyl SET state='${params.state}' WHERE id='${params.id}'`
+					db.query(sql, [], function (result, fields) {
+						res.send(result)
+					})
+				}
+			})
+		}else{
+			res.json(onLogin)
+		}
+	})
+ })
+
+
+ router.get('/sugrec', (req, res, next)=>{
+ 	let params = req.query;
+
+ 	let options = {
+		method: 'get',
+		url: `
+			https://www.baidu.com/sugrec?pre=1&p=3&ie=utf8&json=1&prod=${params.prod}&from=pc_web&sugsid=33425,33429,33261,33344,31253,33570,33392,26350&wd=${encodeURI(params.wd)}&req=2&csor=2&pwd=ruh`,
+	};
+ 	request(options, function (err, res1, body) {
+		if (err) {
+		  console.log(err)
+		}else {
+			let b = JSON.parse(body)
+		  	res.json({
+		  		code: 1,
+				data: b.g
+		  	})
+		}
+	})
+ })
 
 
 

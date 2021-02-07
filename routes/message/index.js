@@ -64,8 +64,9 @@ router.post('/updateMsgState', (req, res, next)=>{
     let params = req.body;
     verifyTokenMiddle(req, res, next, function (data) {
         let userId = data.info.userId;
+        const t = createDate()
         if(userId){
-            let sql = `update msg_ux set state='1',readTime='2020-02-02 13:59:00' where read_user='${userId}' and id='${params.id}'`;
+            let sql = `update msg_ux set state='1',readTime='${`${t.y}-${t.m}-${t.d} ${t.h}:${t.min}:${t.s}`}' where read_user='${userId}' and id='${params.id}'`;
             db.query(sql, [], function(result, fields){
                 res.send(result)
             })
@@ -75,11 +76,31 @@ router.post('/updateMsgState', (req, res, next)=>{
     })
 })
 
+
+// 创建当前时间
+function t_handle(d){
+    return d < 10 ? "0"+d : d;
+}
+
+function createDate (){
+    let t = new Date();
+    let date = {
+        y: t.getFullYear(),
+        m: t_handle(t.getMonth()+1),
+        d: t_handle(t.getDate()),
+        h: t_handle(t.getHours()),
+        min: t_handle(t.getMinutes()),
+        s: t_handle(t.getSeconds())
+    }
+    return date
+}
+
 // 发送消息
 router.post('/sendMsg', (req, res, next) => {
     let params = req.body;
 	verifyTokenMiddle(req, res, next, function (data) {
         let userId = data.info.userId;
+        const t = createDate()
         if(userId){
             let field = [
                 '*id', 
@@ -103,7 +124,7 @@ router.post('/sendMsg', (req, res, next) => {
                 state: '0', 
                 read_user: params.read_user, 
                 relation: params.relation,
-                sendTime: '2020-02-02 14:43:00'
+                sendTime: `${t.y}-${t.m}-${t.d} ${t.h}:${t.min}:${t.s}`
             };
             bodyDealWith(field, d, function (data) {
 				let sql = `INSERT INTO msg_ux(${data.name}) VALUES (${data.questionMark})`
