@@ -14,40 +14,8 @@ charset(superagent);
 var { batchDealWith } = require('../../common');
 
 
-/* 微博热搜 */
-function getHotSearchList() {
-	const weiboURL = "https://s.weibo.com";
-	const hotSearchURL = weiboURL + "/top/summary?cate=realtimehot";
-  	return new Promise((resolve, reject) => {
-	    superagent.get(hotSearchURL, (err, res) => {
-	      if (err) reject("request error");
-	      // console.log('+++', res)
-	      const $ = cheerio.load(res.text);
-	      let hotList = [];
-	      $("#pl_top_realtimehot table tbody tr").each(function (index) {
-	        if (index !== 0) {
-	          const $td = $(this).children().eq(1);
-	          const link = weiboURL + $td.find("a").attr("href");
-	          const text = $td.find("a").text();
-	          const hotValue = $td.find("span").text();
-	          hotList.push({
-	            rank: index,
-	            link,
-	            title: text,
-	            hotValue
-	          });
-	        }
-	      });
-	      hotList.length ? resolve(hotList) : reject("errer");
-				updateHandle('weibo_hot', hotList);
-		});
-  	});
-}
 
-// getHotSearchList();
-
-
-// 执行插入函数
+// 执行插入函数（未使用）
 function insertData(table_name, name, data){
 	sql = `INSERT INTO ${table_name}(${name}) VALUES ? `
 	db.query(sql, [data], function(result,fields){
@@ -81,7 +49,7 @@ function queryData(table_name, data){
 }
 
 
-// 更新表数据
+// 更新表数据（未使用）
 function updateHandle(table_name, hotList){
 	let field = ['*title', '*hotValue', 'rank', '*link'];
 	batchDealWith(field, hotList, function(data){
@@ -90,6 +58,67 @@ function updateHandle(table_name, hotList){
 			db.query(sql, [], function(result,fields){
 				if(result.code){
 					insertData(table_name, data.name, data.data);
+				}else{
+					queryData(table_name, data);
+				}
+			});
+		}else{
+			console.log('数据处理失败...')
+		}
+	})
+}
+
+/* 微博热搜 */
+function getHotSearchList() {
+	const weiboURL = "https://s.weibo.com";
+	const hotSearchURL = weiboURL + "/top/summary?cate=realtimehot";
+  	return new Promise((resolve, reject) => {
+	    superagent.get(hotSearchURL, (err, res) => {
+	        if (err) reject("request error");
+	        const $ = cheerio.load(res.text);
+	        let hotList = [];
+	        $("#pl_top_realtimehot table tbody tr").each(function (index) {
+		        if (index !== 0) {
+		            const $td = $(this).children().eq(1);
+		            const link = weiboURL + $td.find("a").attr("href");
+		            const text = $td.find("a").text();
+		            const hotValue = $td.find("span").text();
+		            hotList.push({
+		                rank: index,
+		                link,
+		                title: text,
+		                hotValue,
+		                target: 'weibo',
+		                targetMc: '微博'
+		            });
+		        }
+	        });
+	        hotList.length ? resolve(hotList) : reject("errer");
+			// updateHandle('weibo_hot', hotList);
+			update_news('weibo', hotList)
+		});
+  	});
+}
+
+// getHotSearchList();
+
+function insertNews(name, data){
+	sql = `INSERT INTO hot_news(${name}) VALUES ? `
+	db.query(sql, [data], function(result,fields){
+		result.data = [];
+	});
+}
+
+
+// 更新表数据
+function update_news(target, hotList){
+	let field = ['*title', '*hotValue', 'rank', '*link', '*target', '*targetMc'];
+	batchDealWith(field, hotList, function(data){
+		if(data.code){
+			let sql = `DELETE FROM hot_news where target='${target}'`;
+			db.query(sql, [], function(result,fields){
+				if(result.code){
+					insertNews(data.name, data.data);
 				}else{
 					queryData(table_name, data);
 				}
@@ -111,55 +140,31 @@ function get_baidu_hot_List() {
     	let hotList = []
     	$('.list-table tbody tr').each( function(index){
     		if(index !== 0){
-					if(!$(this).hasClass('item-tr')){
-						const rank = $(this).children().eq(0).find('span').text();
-						const title = $(this).children().eq(1).find('a').text();
-						const link = $(this).children().eq(2).find('a').attr('href');
-						const hotValue = $(this).children().eq(3).find('span').text();
-						hotList.push({
-							rank,
-							title,
-							link,
-							hotValue
-						});
-					}
-    		}
-    	});
-			hotList.length ? resolve(hotList) : reject("errer");
-			updateHandle('baidu_hot', hotList);
-    })
-  });
-}
-
-
-/* 腾讯新闻 */
-function get_zhengquan_hot_List() {
-	const bdHeatUrl = "https://new.qq.com/ch/finance_stock/";
-  return new Promise((resolve, reject) => {
-    superagent.get(bdHeatUrl).charset('gbk').end((err, res) => {
-    	if (err) reject("request error");
-    	const $ = cheerio.load(res.text);
-    	let hotList = []
-			
-    	$('.list .item .detail').each( function(index){
-    		if(index !== 0){
-					const rank = 100;
-					const title = $(this).children().eq(0).children().text();
-					const link = $(this).children().eq(0).children().attr('href');
-					const hotValue = "100";
+				if(!$(this).hasClass('item-tr')){
+					const rank = $(this).children().eq(0).find('span').text();
+					const title = $(this).children().eq(1).find('a').text();
+					const link = $(this).children().eq(2).find('a').attr('href');
+					const hotValue = $(this).children().eq(3).find('span').text();
 					hotList.push({
 						rank,
 						title,
 						link,
-						hotValue
+						hotValue,
+						target: 'baidu',
+						targetMc: '百度'
 					});
+				}
     		}
     	});
 			hotList.length ? resolve(hotList) : reject("errer");
-			updateHandle('zhengquan_hot', hotList);
+			// updateHandle('baidu_hot', hotList);
+			update_news('baidu', hotList)
     })
   });
 }
+
+
+// get_baidu_hot_List();
 
 
 /* 51cto 技术资讯 */
@@ -173,24 +178,29 @@ function get_jishu_hot_List() {
 			
     	$('.home-left-list ul li .rinfo').each( function(index){
     		if(index !== 0){
-					const rank = 100;
-					const title = $(this).children().eq(0).text();
-					const link = $(this).children().eq(0).attr('href');
-					const hotValue = "100";
-					hotList.push({
-						rank,
-						title,
-						link,
-						hotValue
-					});
+				const rank = 100;
+				const title = $(this).children().eq(0).text();
+				const link = $(this).children().eq(0).attr('href');
+				const hotValue = "100";
+				hotList.push({
+					rank,
+					title,
+					link,
+					hotValue,
+					target: '51cto',
+					targetMc: '51CTO'
+				});
     		}
     	});
 			hotList.length ? resolve(hotList) : reject("errer");
-			updateHandle('jishu_hot', hotList);
+			// updateHandle('jishu_hot', hotList);
+			update_news('51cto', hotList)
     })
   });
 }
 
+
+// get_jishu_hot_List();
 
 // 定时触发
 const rule = new nodeSchedule.RecurrenceRule();  
@@ -203,9 +213,6 @@ nodeSchedule.scheduleJob("10 * * * * *", function () {
 		
 	// 百度
 	// get_baidu_hot_List();
-	
-	// 证券
-	// get_zhengquan_hot_List();
 	
 	// 技术资讯
 	// get_jishu_hot_List();
