@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const secret = "qingge1992";	//签名
 
+const db = require('../mysql');
+
 
 const getCookie = (key)=>{
     const cookies = req.headers.cookie;
@@ -38,18 +40,30 @@ const verifyTokenMiddle = (req, res, next, callback)=>{
     let token = req.headers.token;
     jwt.verify(token, secret, function(err, decoded) {
 		let data = {}
+        // data = {
+        //     code: 0,
+        //     msg: "token验证失败"
+        // }
+        // res.json(data)
+        // return false
 		if(err){
 			data = {
-				state: false,
+				code: 0,
 				info: "token验证失败"
 			}
+            callback(data)
 		}else{
-			data = {
-				state: true,
-				info: decoded
-			}
+            let sql = `SELECT * FROM user_account WHERE userId='${decoded.userId}'`
+            db.query(sql, [], function (result, fields) {
+                data = {
+                    state: true,
+                    info: result.data[0]
+                }
+                callback(data)
+            })
+			
 		}
-        callback(data)
+        
   });  
 }
 

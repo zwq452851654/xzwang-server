@@ -1,11 +1,9 @@
 var express = require('express');
 var router = express.Router();
-const url = require("url");
 var db = require('../../mysql');
 
 const cheerio = require("cheerio");
 const superagent = require("superagent");
-const fs = require("fs");
 const nodeSchedule = require("node-schedule");
 // 当爬取的网页格式为 gbk时，使用此模块进行格式转换
 const charset = require("superagent-charset");
@@ -13,15 +11,6 @@ charset(superagent);
 
 var { batchDealWith } = require('../../common');
 
-
-
-// 执行插入函数（未使用）
-function insertData(table_name, name, data){
-	sql = `INSERT INTO ${table_name}(${name}) VALUES ? `
-	db.query(sql, [data], function(result,fields){
-		result.data = [];
-	});
-}
 
 
 let repeatNum = {
@@ -49,25 +38,6 @@ function queryData(table_name, data){
 }
 
 
-// 更新表数据（未使用）
-function updateHandle(table_name, hotList){
-	let field = ['*title', '*hotValue', 'rank', '*link'];
-	batchDealWith(field, hotList, function(data){
-		if(data.code){
-			let sql = `DELETE FROM ${table_name}`;
-			db.query(sql, [], function(result,fields){
-				if(result.code){
-					insertData(table_name, data.name, data.data);
-				}else{
-					queryData(table_name, data);
-				}
-			});
-		}else{
-			console.log('数据处理失败...')
-		}
-	})
-}
-
 /* 微博热搜 */
 function getHotSearchList() {
 	const weiboURL = "https://s.weibo.com";
@@ -94,7 +64,6 @@ function getHotSearchList() {
 		        }
 	        });
 	        hotList.length ? resolve(hotList) : reject("errer");
-			// updateHandle('weibo_hot', hotList);
 			update_news('weibo', hotList)
 		});
   	});
@@ -157,14 +126,12 @@ function get_baidu_hot_List() {
     		}
     	});
 			hotList.length ? resolve(hotList) : reject("errer");
-			// updateHandle('baidu_hot', hotList);
 			update_news('baidu', hotList)
     })
   });
 }
 
 
-// get_baidu_hot_List();
 
 
 /* 51cto 技术资讯 */
@@ -193,29 +160,26 @@ function get_jishu_hot_List() {
     		}
     	});
 			hotList.length ? resolve(hotList) : reject("errer");
-			// updateHandle('jishu_hot', hotList);
 			update_news('51cto', hotList)
     })
   });
 }
 
 
-// get_jishu_hot_List();
-
 // 定时触发
 const rule = new nodeSchedule.RecurrenceRule();  
-// rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
+rule.minute = [1,6,11,16,21,26,31,36,41,46,51,56];
 // rule = "30 * * * * *"
-nodeSchedule.scheduleJob("10 * * * * *", function () {
+nodeSchedule.scheduleJob(rule, function () {
   try {
 	// 微博
-    // getHotSearchList();
+    getHotSearchList();
 		
 	// 百度
-	// get_baidu_hot_List();
+	get_baidu_hot_List();
 	
 	// 技术资讯
-	// get_jishu_hot_List();
+	get_jishu_hot_List();
 		
   } catch (error) {
     console.error(error);
@@ -227,23 +191,67 @@ nodeSchedule.scheduleJob("10 * * * * *", function () {
 
 
 // -------------------  以下为资讯查询 -------------------------
+
+
 /*
-	* 获取资讯列表
-	* 参数 q = '表名称'
- * */
-router.get('/news', (req, res, next) => {
-	// console.log(req.cookies)
-	let table_name = req.query.q;
-	let sql = `SELECT * FROM ${table_name}`;
+ *	 获取资讯列表
+ *
+ *  */
+router.get('/queryNews', (req, res, next) => {
+	let sql = `SELECT * FROM hot_news`;
 	db.query(sql, [], function(result,fields){
 		if(result.code){
-			res.send(result);
+			let data = {
+				weibo: [],
+				baidu: [],
+				cto_51: []
+			}
+			result.data.forEach(element => {
+				if(element.target == 'weibo'){
+					data.weibo.push(element)
+				}
+				if(element.target == 'baidu'){
+					data.baidu.push(element)
+				}
+				if(element.target == '51cto'){
+					data.cto_51.push(element)
+				}
+			});
+			res.send({
+				code: 1,
+				data: data
+			});
 		}else{
 			res.send(result);
 		}
 	})
 });
 
+
+function queryNews(){
+	let sql = `SELECT * FROM hot_news`;
+	db.query(sql, [], function(result,fields){
+		if(result.code){
+			let data = {
+				weibo: [],
+				baidu: [],
+				cto_51: []
+			}
+			result.data.forEach(element => {
+				if(element.target == 'weibo'){
+					data.weibo.push(element)
+				}
+				if(element.target == 'baidu'){
+					data.baidu.push(element)
+				}
+				if(element.target == '51CTO'){
+					data.cto_51.push(element)
+				}
+			});
+		}
+	})
+}
+// queryNews()
 
 
 

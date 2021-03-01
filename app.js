@@ -37,6 +37,7 @@ var upload = require('./routes/upload/index');
 var bg = require('./routes/bg/index');
 var glzx = require('./routes/glzx/index');
 var message = require('./routes/message/index');
+var bzx = require('./routes/bzx/index');
 
 
 
@@ -50,6 +51,7 @@ app.use('/api/upload', upload);
 app.use('/api/bg', bg);
 app.use('/api/glzx', glzx);
 app.use('/api/message', message);
+app.use('/api/bzx', bzx);
 
 
 // 需要验证token的接口

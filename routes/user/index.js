@@ -22,6 +22,7 @@ const createUserID = (body, res)=>{
 	db.query(sql, function(result,fields){
 		if(fields.length == 0){
 			body.userId = u;
+			body.level = 1; //注册时初始化默认权限为1（普通用户）
 			addUser(body, res)
 		}else{
 			if(fields[0].account == body.account){
@@ -36,11 +37,30 @@ const createUserID = (body, res)=>{
 	});
 }
 
+/**
+* 创建ID
+* */
+function createId() {
+	let time = new Date().getTime() + '';
+	let m, str = "";
+	for (let i = 0; i < 5; i++) {
+		m = Math.random() * time.length
+		str += time.slice(m, ++m);
+	}
+	return str
+}
+
 // 数据插入
 const addUser = (body, res, u)=>{
-	let field = ['userId','phone','email','account','pass','openId'];
+	let field = ['userId','phone','email','account','pass','openId','level'];
+	let m = ['id', 'userId', 'searchAims'];
+	let u_id = createId();
+	let defaultAims = 'baidu';
 	bodyDealWith(field, body, function(data){
-		let sql = `INSERT INTO user_account(${data.name}) VALUES (${data.questionMark}) `
+		let sql = `
+			INSERT INTO user_account(${data.name}) VALUES (${data.questionMark});
+			INSERT INTO user_specific(id,userId,searchIAims) VALUES('${u_id}', '${body.userId}', '${defaultAims}')
+		`
 		db.query(sql, data.data, function(result,fields){
 			result.data = [];
 			res.json(result)
@@ -67,6 +87,11 @@ router.post('/login', (req, res, next) =>{
 				'code': 1,
 				'msg': '登录成功',
 				'token': v
+			})
+		}else{
+			res.json({
+				'code': 0,
+				'msg': '用户名或密码错误'
 			})
 		}
 	})

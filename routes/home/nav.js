@@ -121,7 +121,9 @@ function query_default_often_nav(res) {
 
 
 
-
+/**
+* 创建ID
+* */
 function createId() {
 	let time = new Date().getTime() + '';
 	let m, str = "D";
@@ -194,7 +196,7 @@ router.post('/addBcyl', (req, res, next) => {
 	verifyTokenMiddle(req, res, next, function (data) {
 		let userId = data.info.userId;
 		if (userId) {
-			let field = ['*id', '*userId', '*name', 'icon', '*url', 'parentName', 'parentValue', 'childName', 'childValue', 'other'];
+			let field = ['*id', '*userId', '*name', 'icon', '*url', 'parentName', 'parentValue', 'childName', 'childValue', 'other', 'state'];
 			let id = createId();
 			let d = { 
 				'id': id, 
@@ -206,9 +208,12 @@ router.post('/addBcyl', (req, res, next) => {
 				'parentValue': params.parentValue,
 				'childName': params.childName,
 				'childValue': params.childValue,
-				'other': params.other
+				'other': params.other,
+				'state': '0'
 			}
+			
 			bodyDealWith(field, d, function (data) {
+				console.log(data)
 				let sql = `INSERT INTO nav_bcyl(${data.name}) VALUES (${data.questionMark})`
 				db.query(sql, data.data, function (result, fields) {
 					res.send(result)
@@ -229,7 +234,9 @@ router.post('/addBcyl', (req, res, next) => {
  	let params = req.body;
 	verifyTokenMiddle(req, res, next, function (data) {
 		let userId = data.info.userId;
-		if(userId){
+		if(userId == "") res.json(onLogin);
+		let level = data.info.level;
+		if(level >= 2){
 			let field = ['*name','icon','*url','*parentName','*parentValue','childName','childvalue'];
 			let d = {
 				'name': params.name,
@@ -260,12 +267,18 @@ router.post('/addBcyl', (req, res, next) => {
 				}
 			})
 		}else{
-			res.json(onLogin)
+			res.json({
+				code: 0,
+				msg: "该账号无访问权限"
+			})
 		}
 	})
  })
 
 
+ /**
+ * 首页搜索提示（查的百度的搜索提示）
+ * */
  router.get('/sugrec', (req, res, next)=>{
  	let params = req.query;
 

@@ -15,14 +15,19 @@ router.get('/queryYlbc', (req, res, next) => {
 	let params = req.query;
 	verifyTokenMiddle(req, res, next, function (data) {
         let userId = data.info.userId;
+        if(!userId) res.send(onLogin);
+        let level = data.info.level;
         let sql;
-        if(userId){
+        if(level >= 2){
             sql = `select * from nav_bcyl`
             db.query(sql, [], function (result, fields) {
 				res.send(result)
 			})
         }else{
-            res.send(onLogin)
+            res.json({
+				code: 0,
+				msg: "该账号无访问权限"
+			})
         }
 	})
 });

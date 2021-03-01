@@ -51,7 +51,7 @@ router.post('/setBg', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data) {
 		let userId = data.info.userId;
 		if(userId){
-			let sql = `UPDATE user_specific SET bgImg='${params.bh}' WHERE userId='${userId}'`
+			let sql = `UPDATE user_specific SET bgImg='${params.bh || ''}' WHERE userId='${userId}'`
 			db.query(sql, [], function(result, fields){
 				let sql = `SELECT * FROM user_specific u, file_table f WHERE u.userId='${userId}' AND u.bgImg=f.bh`
 				db.query(sql, [], function(result, fields){
