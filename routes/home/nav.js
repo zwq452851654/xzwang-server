@@ -1,13 +1,16 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const url = require("url");
-var db = require('../../mysql');
+const db = require('../../mysql');
 var { verifyTokenMiddle } = require("../../common/token.js");
-var { bodyDealWith } = require('../../common/index.js');
+const { bodyDealWith } = require('../../common/index.js');
 const request = require('request');
+const md5 = require('md5-node');
+const { json } = require('body-parser');
+const urlencode = require('urlencode');
 
 
-var onLogin = {
+const onLogin = {
 	code: 1,
 	msg: '未登录',
 	data: []
@@ -289,16 +292,47 @@ router.post('/addBcyl', (req, res, next) => {
 	};
  	request(options, function (err, res1, body) {
 		if (err) {
-		  console.log(err)
+			res.json({
+				code: 0,
+				msg: "内容搜索失败"
+			})
 		}else {
 			let b = JSON.parse(body)
 		  	res.json({
 		  		code: 1,
-				data: b.g
+				data: b.g || []
 		  	})
 		}
 	})
  })
+
+
+  /**
+ * 首页百度翻译
+ * */
+router.get('/fanyi', (req, res, next)=>{
+	let params = req.query;
+	let s = `20200105000372897${params.q}1435660288NMUOvO8KNBAT4ACj1Q56`;
+	let m = md5(s)
+	let options = {
+		method: 'get',
+		url: `http://api.fanyi.baidu.com/api/trans/vip/translate?q=${urlencode(params.q)}&from=${params.from}&to=${params.to}&appid=20200105000372897&salt=1435660288&sign=${m}`
+	};
+ 	request(options, function (err, res1, body) {
+		if (err) {
+			res.json({
+				code: 0,
+				msg: "翻译失败，请重试"
+			})
+		}else {
+			let d = JSON.parse(body)
+			res.json({
+				code: 1,
+				data: d.trans_result
+			})
+		}
+	})
+})
 
 
 
