@@ -4,7 +4,7 @@ let databaseConfig = {
 	host: '39.107.227.98',
 	user: 'root',
 	password: 'Zhang.132639',
-	database: 'xzwang',
+	database: 'xzwang',  //测试库 dev_xzw   正式库xzwang
 	multipleStatements: true, //  允许执行多条语句
 }
 

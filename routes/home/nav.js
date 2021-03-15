@@ -16,6 +16,8 @@ const onLogin = {
 	data: []
 }
 
+
+
 /**
  * 查询所有导航
  * */
@@ -105,7 +107,8 @@ router.get('/query_often_nav', (req, res, next) => {
 				}
 			})
 		} else {
-			res.send(onLogin)
+			// res.send(onLogin);
+			query_default_often_nav(res)
 		}
 	})
 })

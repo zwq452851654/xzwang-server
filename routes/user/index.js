@@ -82,7 +82,7 @@ router.post('/login', (req, res, next) =>{
 		if(fields.length > 0){
 			let v = createToken(body.account, fields[0].userId);
 			// res.setHeader('Set-cookie','token=' + v);
-			res.cookie("token", {token: v}, {maxAge: 60000});
+			res.cookie("token", {token: v}, {maxAge: 86400});
 			res.json({
 				'code': 1,
 				'msg': '登录成功',
@@ -97,6 +97,28 @@ router.post('/login', (req, res, next) =>{
 	})
 })
 
+
+/**
+ * 权限菜单
+ * */
+ router.get('/queryMenu', (req, res, next) => {
+	verifyTokenMiddle(req, res, next, function (data) {
+		let userId = data.info.userId;
+		if(userId){
+			let sql = `SELECT * FROM navMenu WHERE userId='${userId}'`
+			db.query(sql, [], function (result, fields) {
+				console.log(result.data)
+				res.send(result)
+			})
+		}
+	})
+});
+
+
+
+/**
+ * 用户信息
+ * */
 router.get('/userInfo', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data){
 		let userId = data.info.userId;

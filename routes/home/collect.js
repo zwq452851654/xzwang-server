@@ -3,7 +3,8 @@ const router = express.Router();
 const db = require('../../mysql');
 const { verifyTokenMiddle } = require("../../common/token.js")
 const { bodyDealWith } = require('../../common/index.js')
-
+const request = require('request');
+const urlencode = require('urlencode');
 
 var onLogin = {
 	code: 1,
@@ -15,11 +16,27 @@ var onLogin = {
 /**
  * 根据用户ID查询收藏夹的一级列表
  * */ 
-router.get('/queryCollect', (req, res, next) =>{
+// router.get('/queryCollect', (req, res, next) =>{
+// 	verifyTokenMiddle(req, res, next, function(data) {
+// 		let userId = data.info.userId;
+// 		if(userId){
+// 			let sql = `SELECT * FROM parent_collect WHERE userId='${userId}' order by type desc`;
+// 			db.query(sql, [], function (result, fields) {
+// 				res.send(result)
+// 			})
+// 		}else{
+// 			res.json(onLogin)
+// 		}
+// 	})
+// })
+
+
+// 查询文件夹列表
+router.get('/queryFolder', (req, res, next) =>{
 	verifyTokenMiddle(req, res, next, function(data) {
 		let userId = data.info.userId;
 		if(userId){
-			let sql = `SELECT * FROM parent_collect WHERE userId='${userId}' order by type desc`;
+			let sql = `SELECT * FROM parent_collect WHERE userId='${userId}' AND type='2' order by type desc`;
 			db.query(sql, [], function (result, fields) {
 				res.send(result)
 			})
@@ -29,21 +46,74 @@ router.get('/queryCollect', (req, res, next) =>{
 	})
 })
 
-/**
- * 根据用户ID、编号查询收藏夹对应的二级列表
- * */ 
-router.get('/querySecondCollect', (req, res, next) =>{
+// 文件一、二级具体列表
+router.get('/queryCollect', (req, res, next) =>{
 	let params = req.query;
 	verifyTokenMiddle(req, res, next, function(data) {
 		let userId = data.info.userId;
+		let sql;
 		if(userId){
-			let sql = `SELECT * FROM child_collect WHERE userId='${userId}' AND parentId='${params.bh}'`;
+			if(params.tar == 'all'){
+				sql = `
+					SELECT bh,userId,mc,type,url,parentId FROM parent_collect WHERE userId='${userId}' AND type='1'
+					UNION 
+					SELECT bh,userId,mc,type,url,parentId FROM child_collect WHERE userId='${userId}' AND type='1'
+				`;
+			}else if(params.tar == 'other'){
+				sql = `SELECT * FROM parent_collect WHERE userId='${userId}' AND type='1'`
+			}else{
+				sql = `SELECT * FROM child_collect WHERE userId='${userId}' AND parentId='${params.tar}'`
+			}
+			
 			db.query(sql, [], function (result, fields) {
 				res.send(result)
 			})
+		}else{
+			res.json(onLogin)
 		}
 	})
 })
+
+
+
+// 网址修改
+router.post('/updateWeb', (req, res, next) =>{
+	let params = req.body;
+	verifyTokenMiddle(req, res, next, function(data) {
+		let userId = data.info.userId;
+		if(userId){
+			let tab_name = params.parentId ? 'child_collect' : 'parent_collect';
+			let sql = `UPDATE ${tab_name} SET mc='${params.mc}',url='${params.url}' WHERE bh='${params.bh}'`
+			db.query(sql, [], function (result, fields) {
+				res.send(result)
+			})
+		}else{
+			res.json(onLogin)
+		}
+	})
+})
+
+
+
+
+
+
+
+/**
+ * 根据用户ID、编号查询收藏夹对应的二级列表
+ * */ 
+// router.get('/querySecondCollect', (req, res, next) =>{
+// 	let params = req.query;
+// 	verifyTokenMiddle(req, res, next, function(data) {
+// 		let userId = data.info.userId;
+// 		if(userId){
+// 			let sql = `SELECT * FROM child_collect WHERE userId='${userId}' AND parentId='${params.bh}'`;
+// 			db.query(sql, [], function (result, fields) {
+// 				res.send(result)
+// 			})
+// 		}
+// 	})
+// })
 
 
 /* 
@@ -60,13 +130,14 @@ router.post('/addCollect', (req, res, next) => {
 		    field = ['*bh', 'parentId', '*userId', '*mc', '*type', '*url'];
 		    d = { 
 		    	'bh': id, 
-		    	'parentId':params.parentID, 
+		    	'parentId':params.parentID || "", 
 		    	'userId':userId, 
 		    	'mc':params.mc,
 		    	'type': 1, 
 		    	'url':params.url
 		   	}
 		    bodyDealWith(field, d, function(data){
+				console.log(data)
 		    	if(params.type == 2){
 		    		sql = `INSERT INTO child_collect(${data.name}) VALUES (${data.questionMark})`
 		    	}
@@ -171,6 +242,9 @@ function createId(){
 	}
 	return str
 }
+
+
+
 
 	
 	
